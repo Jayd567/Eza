@@ -6,14 +6,19 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+  
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
-
+  
   build:
     runs-on: windows-latest
+    permissions:
+      contents: write
+      pull-requests: write
+
     steps:
     - uses: actions/checkout@v7
     - name: Rust Cache
@@ -49,4 +54,15 @@ jobs:
         name: eza-windows
         path: eza-windows.zip  
         archive: false
-        if-no-files-found: error      
+        if-no-files-found: error
+    - name: Update Nightly Release
+      uses: andelf/nightly-release@main
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: nightly
+        name: 'Eza Nightly Release $$'
+        prerelease: true
+        body: 'Nightly release for the commit ${{ github.sha }} of Eza. Things might be unstable, so be careful!'
+        files: |
+          ./eza-windows.zip
